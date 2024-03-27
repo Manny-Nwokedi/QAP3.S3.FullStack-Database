@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassdoor</title>
+</head>
+<body>
+    <h1>Glassdoor</h1>
+
+    <h2>Get All Glassdoor Entries</h2>
+    <button onclick="getAllGlassdoor()">Get All Glassdoor Entries</button>
+    <div id="glassdoorList"></div>
+
+    <h2>Add New Glassdoor Entry</h2>
+    <form id="addGlassdoorForm" onsubmit="addGlassdoor(event)">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br>
+        <label for="price">Price:</label>
+        <input type="text" id="price" name="price" required><br>
+        <button type="submit">Add Glassdoor Entry</button>
+    </form>
+
+    <script>
+        async function getAllGlassdoor() {
+            const response = await fetch('/api/glassdoor');
+            const data = await response.json();
+            const glassdoorList = document.getElementById('glassdoorList');
+            glassdoorList.innerHTML = '';
+            data.forEach(entry => {
+                const listItem = document.createElement('div');
+                listItem.textContent = `${entry.name} - ${entry.description_TEXT} - $${entry.price}`;
+                glassdoorList.appendChild(listItem);
+            });
+        }
+
+        async function addGlassdoor(event) {
+            event.preventDefault();
+            const form = document.getElementById('addGlassdoorForm');
+            const formData = new FormData(form);
+            const name = formData.get('name');
+            const description = formData.get('description');
+            const price = formData.get('price');
+            const response = await fetch('/api/glassdoor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description_TEXT: description, price })
+            });
+            if (response.ok) {
+                alert('Glassdoor entry added successfully!');
+                form.reset();
+            } else {
+                const errorMessage = await response.text();
+                alert(`Failed to add glassdoor entry: ${errorMessage}`);
+            }
+        }
+    </script>
+</body>
+</html>
